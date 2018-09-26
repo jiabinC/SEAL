@@ -449,6 +449,7 @@ partitionSendable (view (pendingTransactions . fromDb) -> pending) xs =
         updateFn !acc (Core.TxInUnknown _ _)   = acc
         updateFn !acc (Core.TxInUtxo txHash _) = txHash : acc
         updateFn !acc (Core.TxInUserCert txHash _) = txHash : acc
+        updateFn !acc (Core.TxInSealState txHash _ _) = txHash : acc
 
 -- | Extends the 'Schedule' with an extra set of [ScheduleSend] and
 -- [ScheduleEvictIfNotConfirmed]. Useful to force dispatching in tests or simply as

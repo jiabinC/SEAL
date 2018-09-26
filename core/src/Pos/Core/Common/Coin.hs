@@ -16,6 +16,7 @@ module Pos.Core.Common.Coin
 
        -- * Arithmetic operations
        , unsafeAddCoin
+       , addCoin
        , unsafeSubCoin
        , unsafeMulCoin
        , subCoin
@@ -91,6 +92,14 @@ unsafeAddCoin (unsafeGetCoin -> a) (unsafeGetCoin -> b)
   where
     res = a+b
 {-# INLINE unsafeAddCoin #-}
+
+addCoin :: Coin -> Coin -> Maybe Coin
+addCoin (unsafeGetCoin -> a) (unsafeGetCoin -> b)
+    | res >= a && res >= b && res <= unsafeGetCoin (maxBound @Coin) = Just $ Coin res
+    | otherwise = Nothing
+  where
+    res = a+b
+{-# INLINE addCoin #-}
 
 -- | Subtraction of coins. Returns 'Nothing' when the subtrahend is bigger
 -- than the minuend, and 'Just' otherwise.

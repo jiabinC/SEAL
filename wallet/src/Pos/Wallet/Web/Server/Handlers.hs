@@ -72,6 +72,7 @@ servantHandlers pm ntpStatus submitTx = toServant' A.WalletApiRecord
     , _backup      = backupHandlers
     , _info        = infoHandlers
     , _system      = systemHandlers
+    , _issue       = issueHandlers pm submitTx
     }
 
 -- branches of the API
@@ -178,6 +179,17 @@ infoHandlers = toServant' A.WInfoApiRecord
 systemHandlers :: MonadFullWalletWebMode ctx m => ServerT A.WSystemApi m
 systemHandlers = toServant' A.WSystemApiRecord
     { _requestShutdown = M.requestShutdown
+    }
+
+issueHandlers
+    :: MonadFullWalletWebMode ctx m
+    => ProtocolMagic
+    -> (TxAux -> m Bool)
+    -> ServerT A.WIssueApi m
+issueHandlers pm submitTx = toServant' A.WIssueApiRecord
+    { _issueGold     = M.issueGold pm submitTx
+    , _issueDollar   = M.issueDollar pm submitTx
+    , _destroyDollar = M.destroyDollar pm submitTx
     }
 
 ----------------------------------------------------------------------------

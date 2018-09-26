@@ -60,12 +60,14 @@ mergeTxOuts = map stick . NE.groupWith groupFunc
             TxOut addr currency (foldl1 unsafeAddCoin $ fmap txOutValue outs)
         stick (TxOutUserCert{txOutAddress = addr, txOutCert = cert} :| _) =
             TxOutUserCert addr cert
+        stick (TxOutSealState{txOutAddress = addr, txOutSealState = st} :| _) =
+            TxOutSealState addr st
 
         groupFunc :: TxOut -> TxOut
         groupFunc TxOut{..} = TxOut txOutAddress txOutCurrency (mkCoin 0) 
-        groupFunc txout@TxOutUserCert{} = txout
+        groupFunc txout = txout
 
-mkCTx
+mkCTx -- TODO xiaolie filter issue and destroy
     :: ChainDifficulty    -- ^ Current chain difficulty (to get confirmations)
     -> TxHistoryEntry     -- ^ Tx history entry
     -> CTxMeta            -- ^ Transaction metadata
@@ -112,10 +114,12 @@ mkCTx diff THEntry {..} meta pc addrBelongsToWallet = do
     encodeTxOut :: TxOut -> (CId Addr, CCurrency, CCoin)
     encodeTxOut TxOut{..} = (encodeCType txOutAddress, encodeCType txOutCurrency, encodeCType txOutValue)
     encodeTxOut TxOutUserCert{} = error "Lost!"
+    encodeTxOut TxOutSealState{} = error "Lost!"
 
     encodeTxOutUserCert :: TxOut -> (CId Addr, CUserCert)
     encodeTxOutUserCert TxOutUserCert{..} = (encodeCType txOutAddress, encodeCType txOutCert)
     encodeTxOutUserCert TxOut{} = error "Lost!"
+    encodeTxOutUserCert TxOutSealState{} = error "Lost!"
 
     inputs = _thInputs
     outputs = toList $ _txOutputs _thTx

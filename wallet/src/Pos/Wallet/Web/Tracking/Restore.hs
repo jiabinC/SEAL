@@ -84,12 +84,10 @@ restoreWalletBalance db credentials = do
     updateWalletBalancesAndUtxo db (utxoToModifier utxo)
     where
       getAddress :: TxOutAux -> Address
-      getAddress (TxOutAux (TxOut addr _ _)) = addr
-      getAddress (TxOutAux (TxOutUserCert addr _)) = addr
+      getAddress = txOutAddress . toaOut
 
       walletUtxo :: (TxIn, TxOutAux) -> Bool
-      walletUtxo (_, TxOutAux (TxOut addr _ _)) = isJust (decryptAddress credentials addr)
-      walletUtxo (_, TxOutAux (TxOutUserCert addr _)) = isJust (decryptAddress credentials addr)
+      walletUtxo (_, TxOutAux{..}) = isJust (decryptAddress credentials $ txOutAddress toaOut)
 
 -- | Restores the genesis addresses for a wallet, given its 'WalletDecrCredentials'.
 -- NOTE: This doesn't have any effect on the balance as if these addresses still have

@@ -9,6 +9,7 @@
 
 module Pos.Client.Txp.UtilMulti
        ( createMTxMulti
+       , prepareInpsOutsWithoutFee
        ) where
 
 import           Universum 

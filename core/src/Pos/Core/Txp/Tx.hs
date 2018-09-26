@@ -23,6 +23,8 @@ module Pos.Core.Txp.Tx
        , isCertTxOut
        , isSealStateTxOut
        , safeGetTxOutValue
+       , isGoldCoinStateTxOut
+       , isGoldDollarStateTxOut
        ) where
 
 import           Universum
@@ -271,3 +273,11 @@ isSealStateTxOut _ = False
 safeGetTxOutValue :: TxOut -> Coin
 safeGetTxOutValue TxOut{..} = txOutValue
 safeGetTxOutValue _ = mkCoin 0
+
+isGoldCoinStateTxOut :: TxOut -> Bool
+isGoldCoinStateTxOut TxOutSealState{txOutSealState = GoldCoinState{}} = True
+isGoldCoinStateTxOut _ = False
+
+isGoldDollarStateTxOut :: TxOut -> Bool
+isGoldDollarStateTxOut TxOutSealState{txOutSealState = GoldDollarState{}} = True
+isGoldDollarStateTxOut _ = False

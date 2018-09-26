@@ -25,7 +25,8 @@ import           Pos.Wallet.Web.ClientTypes (Addr, ApiVersion (..), CAccount, CA
                                              CWAddressMeta, CWallet, CWalletAssurance, CWalletInit,
                                              CWalletMeta, CWalletRedeem, ClientInfo (..),
                                              NewBatchPayment (..), SyncProgress, Wal, NewCert (..),
-                                             NewBatchPaymentMulti (..), CurrencyAmount (..))
+                                             NewBatchPaymentMulti (..), CurrencyAmount (..), 
+                                             GoldIssue (..), DollarIssue (..), DollarDestroy (..))
 import           Pos.Wallet.Web.Error (WalletError)
 import           Pos.Wallet.Web.Sockets.Types (NotifyEvent)
 
@@ -235,3 +236,40 @@ instance ToJSON NewCert where
                 [ "key"   .= key
                 , "value" .= value
                 ]
+
+instance FromJSON GoldIssue where
+    parseJSON = withObject "GoldIssue" $ \o -> do
+        issuedGold <- o .: "issuedGold"
+        reason     <- o .: "reason"
+        return $ GoldIssue (CCoin issuedGold) reason
+
+instance ToJSON GoldIssue where  
+    toJSON GoldIssue{..} = object [ "issuedGold" .= (getCCoin giIssuedGold)
+                                  , "reason"     .= giReason 
+                                  ]
+
+instance FromJSON DollarIssue where
+    parseJSON = withObject "DollarIssue" $ \o -> do
+        issuedDollar <- o .: "issuedDollar"
+        lockedGold   <- o .: "lockedGold"
+        reason       <- o .: "reason"
+        return $ DollarIssue (CCoin issuedDollar) (CCoin lockedGold) reason
+
+instance ToJSON DollarIssue where  
+    toJSON DollarIssue{..} = object [ "issuedDollar" .= (getCCoin diIssuedDollar)
+                                    , "lockedGold"     .= (getCCoin diLockedGold) 
+                                    , "reason"         .= diReason 
+                                    ]
+
+instance FromJSON DollarDestroy where
+    parseJSON = withObject "DollarDestroy" $ \o -> do
+        destroyedDollar <- o .: "destroyedDollar"
+        unlockedGold    <- o .: "unlockedGold"
+        reason          <- o .: "reason"
+        return $ DollarDestroy (CCoin destroyedDollar) (CCoin unlockedGold) reason
+
+instance ToJSON DollarDestroy where  
+    toJSON DollarDestroy{..} = object [ "destroyedDollar" .= (getCCoin ddDestroyedDollar)
+                                      , "unlockedGold"      .= (getCCoin ddUnlockedGold) 
+                                      , "reason"            .= ddReason 
+                                      ]

@@ -11,6 +11,8 @@ module Pos.Client.Txp
        , module Pos.Client.Txp.UtilMulti
        , module Pos.Client.Txp.UtilCert
        , module Pos.Client.Txp.NetworkCert
+       , module Pos.Client.Txp.UtilIssue
+       , module Pos.Client.Txp.NetworkIssue
        ) where
 
 import            Pos.Client.Txp.Addresses
@@ -23,4 +25,5 @@ import            Pos.Client.Txp.NetworkMulti
 import            Pos.Client.Txp.UtilMulti
 import            Pos.Client.Txp.UtilCert
 import            Pos.Client.Txp.NetworkCert
-
+import            Pos.Client.Txp.UtilIssue
+import            Pos.Client.Txp.NetworkIssue

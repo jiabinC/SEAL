@@ -13,6 +13,7 @@ module Pos.Wallet.Web.Methods
        , module Pos.Wallet.Web.Methods.Reporting
        , module Pos.Wallet.Web.Methods.Restore
        , module Pos.Wallet.Web.Methods.Txp
+       , module Pos.Wallet.Web.Methods.Issue
        ) where
 
 import           Pos.Wallet.Web.Methods.Backup
@@ -27,5 +28,6 @@ import           Pos.Wallet.Web.Methods.Redeem
 import           Pos.Wallet.Web.Methods.Reporting
 import           Pos.Wallet.Web.Methods.Restore
 import           Pos.Wallet.Web.Methods.Txp
+import           Pos.Wallet.Web.Methods.Issue
 
 

@@ -32,6 +32,8 @@ module Pos.Txp.Toil.Types
        , applyUtxoModToAddrCoinMap
        , applyUtxoModToCurrencyAddrCoinMapMap
        , getBalanceFromCurrencyAddrCoinMapMap
+       , getGoldCoinStateOnly
+       , getGoldDollarStateOnly
        ) where
 
 import           Universum
@@ -48,7 +50,7 @@ import           Serokell.Util.Text (mapBuilderJson)
 import           Pos.Core (Address, Coin, Currency, StakeholderId, unsafeAddCoin,
                  unsafeSubCoin, mkCoin, pattern SealCoin, pattern GoldCoin, pattern GoldDollar)
 import           Pos.Core.Txp (TxAux, TxId, TxIn, TxOut (..), TxOutAux (..), TxUndo, 
-                 matchCurrency, isPlainTxOut, isCertTxOut)
+                 matchCurrency, isPlainTxOut, isCertTxOut, isGoldCoinStateTxOut, isGoldDollarStateTxOut)
 import qualified Pos.Util.Modifier as MM
 
 ----------------------------------------------------------------------------
@@ -92,6 +94,18 @@ filterUtxoCertOnly = M.filter (isCertTxOut . toaOut)
 
 filterUtxoModifierByCurrency :: UtxoModifier -> Currency -> UtxoModifier
 filterUtxoModifierByCurrency utxoModifier currency = MM.filter (maybe True (matchCurrency currency) . fmap toaOut) utxoModifier  -- reserve all deletions
+
+getGoldCoinStateOnly :: Utxo -> Either Text (TxIn, TxOutAux)
+getGoldCoinStateOnly utxo = 
+    case (M.toList $ M.filter (isGoldCoinStateTxOut . toaOut) utxo) of
+        [(txIn, txOutAux)] -> Right (txIn, txOutAux)
+        _                  -> Left "Gold coin state not found or found more than one!"
+
+getGoldDollarStateOnly :: Utxo -> Either Text (TxIn, TxOutAux)
+getGoldDollarStateOnly utxo = 
+    case (M.toList $ M.filter (isGoldDollarStateTxOut . toaOut) utxo) of
+        [(txIn, txOutAux)] -> Right (txIn, txOutAux)
+        _                  -> Left "Gold dollar state not found or found more than one!"
 
 -- | Wrapper for genesis utxo.
 newtype GenesisUtxo = GenesisUtxo

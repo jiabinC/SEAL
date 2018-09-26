@@ -28,6 +28,7 @@ module Pos.Wallet.Web.Api
        , WBackupApi      , WBackupApiRecord(..)
        , WInfoApi        , WInfoApiRecord(..)
        , WSystemApi      , WSystemApiRecord(..)
+       , WIssueApi       , WIssueApiRecord(..)
        -- * Types for particular endpoints for benchmarking.
        , GetAccounts
        , GetHistory
@@ -68,7 +69,8 @@ import           Pos.Wallet.Web.ClientTypes (Addr, CAccount, CAccountId, CAccoun
                                              CPaperVendWalletRedeem, CPassPhrase, CProfile, CTx,
                                              CTxId, CUpdateInfo, CWallet, CWalletInit, CWalletMeta,
                                              CWalletRedeem, ClientInfo, NewBatchPayment, NewBatchPaymentMulti,
-                                             ScrollLimit, ScrollOffset, SyncProgress, NewCert, Wal)
+                                             ScrollLimit, ScrollOffset, SyncProgress, NewCert, Wal, 
+                                             GoldIssue, DollarIssue, DollarDestroy)
 import           Pos.Wallet.Web.Error (WalletError (DecodeError), catchEndpointErrors)
 import           Pos.Wallet.Web.Methods.Misc (PendingTxsSummary, WalletStateSnapshot)
 
@@ -138,6 +140,7 @@ data WalletApiRecord route = WalletApiRecord
   , _backup      :: route :- WBackupApi           -- /backup
   , _info        :: route :- WInfoApi             -- /info
   , _system      :: route :- WSystemApi           -- /system
+  , _issue       :: route :- WIssueApi            -- /issue
   }
   deriving (Generic)
 
@@ -359,6 +362,7 @@ type GetHistory =
     :> QueryParam "walletId" (CId Wal)
     :> CQueryParam "accountId" CAccountId
     :> QueryParam "address" (CId Addr)
+    :> QueryParam "currency" Currency
     :> QueryParam "skip" ScrollOffset
     :> QueryParam "limit" ScrollLimit
     :> WRes Get ([CTx], Word)
@@ -610,5 +614,36 @@ data WInfoApiRecord route = WInfoApiRecord
     _getClientInfo :: route
     :- Summary "Get general information about this service."
     :> WRes Get ClientInfo
+  }
+  deriving (Generic)
+
+-- | The "/issue" branch of the API
+type WIssueApi = "issue" :> ToServant (WIssueApiRecord AsApi)
+
+data WIssueApiRecord route = WIssueApiRecord
+  {
+   _issueGold :: route
+    :- "issueGold"
+    :> Summary "Issue gold coin, use certificate as inputs."
+    :> DCQueryParam "passphrase" CPassPhrase
+    :> CCapture "from" CAccountId
+    :> ReqBody '[JSON] GoldIssue
+    :> WRes Post CTx
+
+  , _issueDollar :: route
+    :- "issueDollar"
+    :> Summary "Issue gold coin, use gold coins and certificate as inputs."
+    :> DCQueryParam "passphrase" CPassPhrase
+    :> CCapture "from" CAccountId
+    :> ReqBody '[JSON] DollarIssue
+    :> WRes Post CTx
+
+  , _destroyDollar :: route
+    :- "destroyDollar"
+    :> Summary "Destroy dollar coin and unlock gold coin, use certificate as inputs."
+    :> DCQueryParam "passphrase" CPassPhrase
+    :> CCapture "from" CAccountId
+    :> ReqBody '[JSON] DollarDestroy
+    :> WRes Post CTx
   }
   deriving (Generic)

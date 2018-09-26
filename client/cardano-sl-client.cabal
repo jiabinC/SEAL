@@ -25,6 +25,8 @@ library
                        Pos.Client.Txp.UtilMulti
                        Pos.Client.Txp.UtilCert
                        Pos.Client.Txp.NetworkCert
+                       Pos.Client.Txp.UtilIssue
+                       Pos.Client.Txp.NetworkIssue
 
                        Pos.Client.Update
                        Pos.Client.Update.Network

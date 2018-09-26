@@ -77,10 +77,12 @@ allTransactions
     => Maybe WalletId
     -> Maybe AccountIndex
     -> Maybe (V1 Core.Address)
+    -- -> Maybe (V1 Core.Currency)
     -> RequestParams
     -> FilterOperations Transaction
     -> SortOperations Transaction
     -> m (WalletResponse [Transaction])
+-- allTransactions mwalletId mAccIdx mAddr mCurrency requestParams fops sops  =
 allTransactions mwalletId mAccIdx mAddr requestParams fops sops  =
     case mwalletId of
         Just walletId -> do
@@ -98,9 +100,13 @@ allTransactions mwalletId mAccIdx mAddr requestParams fops sops  =
                     Nothing        -> Nothing
                     Just (V1 addr) -> Just $ V0.encodeCType addr
 
+            -- let v0Currency = case mCurrency of
+            --         Nothing            -> Nothing
+            --         Just (V1 currency) -> Just currency
+
             -- get all `[Transaction]`'s
             let transactions = do
-                    (V0.WalletHistory wh, _) <- V0.getHistory cIdWallet (const accIds) v0Addr
+                    (V0.WalletHistory wh, _) <- V0.getHistory cIdWallet (const accIds) v0Addr Nothing  --v0Currency
                     migrate wh
 
             -- Paginate result

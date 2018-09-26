@@ -42,6 +42,9 @@ instance ToSchema      CT.CTxId
 instance ToParamSchema CT.CTxId
 instance ToSchema      CT.CUserCert
 instance ToSchema      CT.NewCert
+instance ToSchema      CT.GoldIssue
+instance ToSchema      CT.DollarIssue
+instance ToSchema      CT.DollarDestroy
 instance ToSchema      CT.CTx
 instance ToSchema      CT.CTxMeta
 instance ToSchema      CT.CPtxCondition

@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 -- | Wallet history
 
@@ -25,7 +26,7 @@ import           Serokell.Util (listChunkedJson, listJsonIndent)
 import           System.Wlog (WithLogger, logDebug)
 
 import           Pos.Client.Txp.History (MonadTxHistory, TxHistoryEntry (..), txHistoryListToMap)
-import           Pos.Core (Address, ChainDifficulty, timestampToPosix)
+import           Pos.Core (Address, Currency, ChainDifficulty, timestampToPosix)
 import           Pos.Core.Txp (TxId)
 import           Pos.Infra.Util.LogSafe (logInfoSP, secureListF)
 import           Pos.Util.Servant (encodeCType)
@@ -97,8 +98,9 @@ getHistory
     => CId Wal
     -> (WalletSnapshot -> [AccountId]) -- ^ Which account IDs to get from the snapshot
     -> Maybe (CId Addr)
+    -> Maybe Currency
     -> m (WalletHistory, WalletHistorySize)
-getHistory cWalId getAccIds mAddrId = do
+getHistory cWalId getAccIds mAddrId mCurrency = do
     db <- askWalletDB
     ws <- getWalletSnapshot db
 
@@ -122,9 +124,12 @@ getHistory cWalId getAccIds mAddrId = do
 
     (cHistory, cHistorySize) <- getFullWalletHistory db cWalId
     cHistory' <- eitherToThrow $ filterFn cHistory
+    let cHistory'' = case mCurrency of
+            Nothing -> cHistory'
+            Just c -> filterTxhByCurrency cHistory' c
     logDebug "getHistory: filtered transactions"
     -- TODO: Why do we reuse the old size, pre-filter? Explain.
-    return (cHistory', cHistorySize)
+    return (cHistory'', cHistorySize)
   where
     filterByAddrs :: S.Set (CId Addr)
                   -> WalletHistory
@@ -143,10 +148,11 @@ getHistoryLimited
     => Maybe (CId Wal)
     -> Maybe AccountId
     -> Maybe (CId Addr)
+    -> Maybe Currency
     -> Maybe ScrollOffset
     -> Maybe ScrollLimit
     -> m ([CTx], Word)
-getHistoryLimited mCWalId mAccId mAddrId mSkip mLimit = do
+getHistoryLimited mCWalId mAccId mAddrId mCurrency mSkip mLimit = do
     (cWalId, accIds) <- case (mCWalId, mAccId) of
         (Nothing, Nothing)      -> throwM errorSpecifySomething
         (Just _, Just _)        -> throwM errorDontSpecifyBoth
@@ -155,7 +161,7 @@ getHistoryLimited mCWalId mAccId mAddrId mSkip mLimit = do
              in pure (cWalId', accIds')
         (Nothing, Just accId)   -> pure (aiWId accId, const [accId])
     (WalletHistory unsortedThs, WalletHistorySize n)
-        <- getHistory cWalId accIds mAddrId
+        <- getHistory cWalId accIds mAddrId mCurrency
 
     let !sortedTxh = forceList $ sortByTime (Map.elems unsortedThs)
     logDebug "getHistoryLimited: sorted transactions"
@@ -178,6 +184,15 @@ getHistoryLimited mCWalId mAccId mAddrId mSkip mLimit = do
         "Please specify either walletId or accountId"
     errorDontSpecifyBoth = RequestError $
         "Please do not specify both walletId and accountId at the same time"
+
+filterTxhByCurrency :: WalletHistory -> Currency -> WalletHistory
+filterTxhByCurrency wh c = 
+        WalletHistory $ Map.filter filterFunc $ unWalletHistory wh
+    where
+        filterFunc (ctx, _) = 
+            let inputs = filter (\(_, cc, _) -> cc == encodeCType c) $ ctInputs ctx 
+                outputs = filter (\(_, cc, _) -> cc == encodeCType c) $ ctOutputs ctx 
+            in (length inputs) /= 0 || (length outputs) /= 0
 
 addHistoryTxMeta
     :: (MonadIO m)

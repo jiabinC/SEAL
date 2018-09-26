@@ -54,6 +54,9 @@ module Pos.Wallet.Web.ClientTypes.Types
       , CTx (..)
       , CTExMeta (..)
       , CUpdateInfo (..)
+      , GoldIssue (..)
+      , DollarIssue (..)
+      , DollarDestroy (..)
       , mkCTxId
 
         -- * Profile
@@ -609,6 +612,63 @@ instance BuildableSafeGen NewCert where
         ncInputs ncOutputs
 
 deriveSafeBuildable ''NewCert
+
+data GoldIssue = GoldIssue
+    {
+      giIssuedGold   :: CCoin
+    , giReason       :: Text
+    } deriving (Show, Generic)
+
+instance Buildable GoldIssue where
+    build GoldIssue{..} =
+        bprint ("{ issuedGold="%build
+                %" reason="%build%"\n"
+                %" }")
+        giIssuedGold
+        giReason
+
+instance Buildable (SecureLog GoldIssue) where
+    build _ = "<gold_issue>"
+
+data DollarIssue = DollarIssue
+    {
+      diIssuedDollar :: CCoin
+    , diLockedGold   :: CCoin
+    , diReason       :: Text
+    } deriving (Show, Generic)
+
+instance Buildable DollarIssue where
+    build DollarIssue{..} =
+        bprint ("{ issuedDollar="%build
+                %" lockedGold="%build
+                %" reason="%build%"\n"
+                %" }")
+        diIssuedDollar
+        diLockedGold
+        diReason
+
+instance Buildable (SecureLog DollarIssue) where
+    build _ = "<dollar_issue>"
+
+data DollarDestroy = DollarDestroy
+    {
+      ddDestroyedDollar :: CCoin
+    , ddUnlockedGold    :: CCoin
+    , ddReason          :: Text
+    } deriving (Show, Generic)
+
+instance Buildable DollarDestroy where
+    build DollarDestroy{..} =
+        bprint ("{ destroyedDollar="%build
+                %" unlockedGold="%build
+                %" reason="%build%"\n"
+                %" }")
+        ddDestroyedDollar
+        ddUnlockedGold
+        ddReason
+
+instance Buildable (SecureLog DollarDestroy) where
+    build _ = "<dollar_destroy>"
 
 -- | Update system data
 data CUpdateInfo = CUpdateInfo
