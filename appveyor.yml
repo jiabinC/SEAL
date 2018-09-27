@@ -109,7 +109,7 @@ test_script:
 # Retry transient failures due to https://github.com/haskell/cabal/issues/4005
   # We intentionally don't build auxx here, because this build is for installer.
       # cardano-sl cardano-sl-tools cardano-sl-wallet cardano-sl-wallet-new
-  - scripts\ci\appveyor-retry call stack --dump-logs install   cardano-sl-tools
+  - scripts\ci\appveyor-retry call stack --dump-logs install   cardano-sl-wallet-new
       -j 3
      --no-terminal
       --local-bin-path %WORK_DIR%
@@ -126,12 +126,12 @@ test_script:
   # Cardano pieces, modulo the frontend
   - mkdir daedalus
     # log config is called `log-config-prod.yaml` just in case, it's the old name
-#  - copy log-configs\daedalus.yaml daedalus\log-config-prod.yaml
-#  - copy lib\configuration.yaml daedalus\
-#  - copy lib\*genesis*.json daedalus\
-#  - copy cardano-node.exe daedalus\
-  - copy cardano-x509-certificates.exe daedalus\
-  - copy cardano-launcher.exe daedalus\
+  - copy log-configs\daedalus.yaml daedalus\log-config-prod.yaml
+  - copy lib\configuration.yaml daedalus\
+  - copy lib\*genesis*.json daedalus\
+  - copy cardano-node.exe daedalus\
+ # - copy cardano-x509-certificates.exe daedalus\
+ # - copy cardano-launcher.exe daedalus\
   - cd daedalus
   - Echo %APPVEYOR_BUILD_VERSION% > build-id
   - Echo %APPVEYOR_REPO_COMMIT% > commit-id
