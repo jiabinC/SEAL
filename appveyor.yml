@@ -114,8 +114,6 @@ test_script:
      --no-terminal
       --local-bin-path %WORK_DIR%
       --no-haddock-deps
-      --flag cardano-sl-core:-asserts
-      --flag cardano-sl-tools:for-installer
       --flag cardano-sl-wallet:for-installer
       --extra-include-dirs="C:\OpenSSL-Win64-v102\include"
       --extra-lib-dirs="C:\OpenSSL-Win64-v102"
@@ -123,6 +121,8 @@ test_script:
       --extra-lib-dirs="C:\xz_extracted\bin_x86-64"
       --extra-include-dirs="%WORK_DIR%\rocksdb\include"
       --extra-lib-dirs="%WORK_DIR%"
+      #  --flag cardano-sl-core:-asserts
+      #  --flag cardano-sl-tools:for-installer
   # Cardano pieces, modulo the frontend
   - mkdir daedalus
     # log config is called `log-config-prod.yaml` just in case, it's the old name
